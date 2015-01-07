@@ -211,7 +211,12 @@ class DSSaveFileParser(object):
                 fo.seek(_offset + item['offset'], 0)
                 data = fo.read(item['size'])
                 if item['type'] == 'c':
-                    encoded = data.decode('utf-16').split('\x00')[0]
+                    # find the \x00\x00 terminator
+                    eos = len(data)
+                    for n in range(0, len(data), 2):
+                        if data[n:n+2] == b'\x00\x00':
+                            eos = n
+                    encoded = data[0:eos].decode('utf-16').split('\x00')[0]
                 elif item['type'] == 'I':
                     encoded = struct.unpack(item['type'], data)[0]
                 else:
